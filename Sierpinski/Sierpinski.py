@@ -4,7 +4,7 @@
 ## Desc:    Sierpinski's traingle drawer using the turtle lib.
 ##
 ## Author:  "Das" Franck Hochstaetter
-## Version: V1.1 (03/09/2015)
+## Version: V1.2 (03/09/2015)
 
 import argparse
 from turtle import *
