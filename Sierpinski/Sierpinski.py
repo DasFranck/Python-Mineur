@@ -1,30 +1,42 @@
 #!/usr/bin/env python
 
+## Name:    Sierpinski.py
+## Desc:    Sierpinski's traingle drawer using the turtle lib.
+##
+## Author:  "Das" Franck Hochstaetter
+## Version: V1.1 (03/09/2015)
+
 import argparse
 from turtle import *
 from time import sleep
 from math import sqrt
 
 parser = argparse.ArgumentParser(description="Sierpinski's traingle drawer.");
+parser.add_argument("-c", "--cursor", help="show the cursor", action="store_true");
+parser.add_argument("-i", "--iteration", help="modify the number of iterations TBD", type=int);
+parser.add_argument("-o", "--orange", help="better colors", action="store_true");
 parser.add_argument("-s", "--size", help="modify triangle size", type=int);
+parser.add_argument("--speed", help="modify the cursor speed TBD", type=int);
 parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true");
 args = parser.parse_args();
 
 def main():
-    bgcolor("white");
-    color("black");
+    print("\033c");
 
-    if (args.size):
-        size = args.size;
-    else:
-        size = 400;
+    if (args.orange):
+        bgcolor("black");
+        color("orange");
+    if (args.cursor == 0):
+        ht();
+
+    size = args.size if args.size else 400;
     xa = (-size)/2;
     ya = (-size)/2;
     xb = size/2;
     yb = (-size)/2;
     xc = 0;
     yc = sqrt(3)/2 * size - size/2;
-    draw(xa, ya, xb, yb, xc, yc, 8);
+    draw(xa, ya, xb, yb, xc, yc, 4);
     input("Push Enter to exit the program");
 
 def draw(xa, ya, xb, yb, xc, yc, it):
