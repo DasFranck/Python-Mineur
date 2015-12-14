@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+## Name:    EpiPeignoir.py
+## Desc:    Epitech Ranking by GPA
+##
+## Author:  "Das" Franck Hochstaetter
+## Version: v0.1 (14/12/2015)
+##
+## Dependencies : - requests (pip install requests)
+##    Requests is an Apache2 Licensed HTTP library, written in Python, for human beings.
+##                - pandas (pip install pandas)
+##    pandas is a library providing data structures and data analysis tools for Python
 
 import argparse
 import pandas
