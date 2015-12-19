@@ -23,10 +23,13 @@ re_credits = re.compile("Total credits acquired.+\n.+?(\d+).+", re.MULTILINE)
 re_gpa = re.compile("G.P.A.+\n.+?(\d*\.*\d+).+", re.MULTILINE)
 
 def main():
+    parser = argparse.ArgumentParser(description="Epitech Ranking by GPA")
+    parser.add_argument("-c", "--configfile", help="path to the config file", default="config.ini")
+    args = parser.parse_args()
     df = pandas.DataFrame()
     EPITECH_INTRA_URL = "https://intra.epitech.eu/"
     config = ConfigParser()
-    config.read("config.ini")
+    config.read(args.configfile)
 
     data = {"login": config["Credential"]["login"],
             "password": config["Credential"]["password"],
