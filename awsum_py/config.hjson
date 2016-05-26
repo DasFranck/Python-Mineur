@@ -12,8 +12,10 @@ reference: [
   https://yahoo.com/
 ]
 
-// Timespan between each check in seconds
-timespan: 10
+// Timespan between each check in seconds for each website.
+timespan: [
+10
+]
 
 // Other possibilities :
 //   SMTP Conf, Accepted HTTPCode, Output database
