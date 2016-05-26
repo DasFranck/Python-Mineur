@@ -30,12 +30,16 @@ class awsum():
     #   and the index of his website in the target/timespan array
     def __init__(self, config, args, i):
         # To be modified with args
-        self.target = config["target"][i]
-        self.timespan = config["timespan"][i]
-        self.reference = config["reference"]
+        try:
+            self.target = config["target"][i]
+            self.timespan = config["timespan"][i]
+            self.reference = config["reference"]
+        except KeyError as missing_key:
+            raise self.InvalidConfigFile("Incorrect hjson config file, %s is missing." % missing_key)
 
-        #if target.length != timespan.length:
-        #    except
+        if len(config["target"]) != len(config["timespan"]):
+            raise self.InvalidConfigFile("The array of target and the array of timespan must have the same length.")
+
 
     def check_network_status(self):
         url = urlparse(website)
@@ -45,6 +49,12 @@ class awsum():
             return (status.getresponse().status)
         except socket.error:
             return (self.check_network_status())
+
+
+    # My own exception for an invalid Config File
+    class InvalidConfigFile(Exception):
+        def __init__(self, *args, **kwargs):
+            Exception.__init__(self, *args, **kwargs)
 
 
 
@@ -60,8 +70,8 @@ def main():
             awsum_array.append(awsum(config, args, i))
             print(awsum_array[i].target)
     #If a value was missing in the config file
-    except KeyError as missing_key:
-        print("Incorrect hjson config file, %s is missing." % missing_key)
+    except awsum.InvalidConfigFile as err_msg:
+        print("IncorrectConfigFile: %s" % err_msg)
 
 if __name__ == "__main__":
     main()
