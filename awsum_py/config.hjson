@@ -1,0 +1,19 @@
+// The website(s) you need to monitor.
+// Don't forget http:// or https://
+target: [
+  https://daspat.fr/
+]
+
+// Those websites will be ping to check if your connection or the website is down.
+// Don't forget http:// or https://
+reference: [
+  https://google.fr/
+  https://google.com/
+  https://yahoo.com/
+]
+
+// Timespan between each check in seconds
+timespan: 10
+
+// Other possibilities :
+//   SMTP Conf, Accepted HTTPCode, Output database
