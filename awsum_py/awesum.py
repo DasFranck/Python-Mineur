@@ -11,6 +11,7 @@
 ##    A configuration file format for humans.
 ##    Relaxed syntax, fewer mistakes, more comments.
 
+import asyncio                              # Coroutine/Asynchronous routine
 import hjson                                # Config File
 import socket                               # Except socket.error
 from http.client import HTTPConnection      # HTTPConnection
@@ -22,14 +23,10 @@ DESCRIPTION = "Automatic Website Status and Uptime Monitoring"
 
 # The main class (one by website)
 class awsum():
-    target = ""
-    reference = []
-    timespan = 0
 
     # Init the awsum class with the config file (as a string), the argument namepace
     #   and the index of his website in the target/timespan array
-    def __init__(self, config, args, i):
-        # To be modified with args
+    def __init__(self, config, i):
         try:
             self.target = config["target"][i]
             self.timespan = config["timespan"][i]
@@ -40,6 +37,10 @@ class awsum():
         if len(config["target"]) != len(config["timespan"]):
             raise self.InvalidConfigFile("The array of target and the array of timespan must have the same length.")
 
+    # Launch the monitoring
+    async def start(self):
+        while True:
+            check_network_status()
 
     def check_network_status(self):
         url = urlparse(website)
@@ -67,11 +68,11 @@ def main():
     awsum_array = []
     try:
         for i in range(len(config["target"])):
-            awsum_array.append(awsum(config, args, i))
+            awsum_array.append(awsum(config, i))
             print(awsum_array[i].target)
     #If a value was missing in the config file
     except awsum.InvalidConfigFile as err_msg:
-        print("IncorrectConfigFile: %s" % err_msg)
+        print("Error: IncorrectConfigFile: %s" % err_msg)
 
 if __name__ == "__main__":
     main()
