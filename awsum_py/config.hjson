@@ -1,20 +1,24 @@
 // The website(s) you need to monitor.
 // Don't forget http:// or https://
-target: [
+targets: [
   https://daspat.fr/
+  https://google.fr/
+  https://dasfranck.fr/
 ]
 
 // Those websites will be ping to check if your connection or the website is down.
 // Don't forget http:// or https://
-reference: [
+references: [
   https://google.fr/
   https://google.com/
   https://yahoo.com/
 ]
 
 // Timespan between each check in seconds for each website.
-timespan: [
+timespans: [
 10
+1
+5
 ]
 
 // Other possibilities :
