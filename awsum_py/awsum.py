@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-## Name:    awesum.py
+## Name:    awsum.py
 ## Desc:    Automatic Website Status and Uptime Monitoring
 ##
 ## Author:  "Das" Franck Hochstaetter
@@ -12,6 +12,7 @@
 ##    Relaxed syntax, fewer mistakes, more comments.
 
 import asyncio                              # Coroutine/Asynchronous routine
+import aiohttp
 import hjson                                # Config File
 import socket                               # Except socket.error
 from http.client import HTTPConnection      # HTTPConnection
@@ -39,17 +40,30 @@ class awsum():
 
     # Launch the monitoring
     async def start(self):
+        #I should find something less ugly
         while True:
-            check_network_status()
+            #Check if the website is up, if not check the network.
+            if (await check_website_status() == False):
+                if (await check_network_status() == False):
+                    print("Network is down.")
+                    ## Add Network_Down
+                else:
+                    print("Website is up.")
+                    ## Add Website_Up
+            else:
+                print("Website is down.")
+                ## Add Website_Down
+            await asyncio.sleep(self.timespan)           ##Check this one day
 
-    def check_network_status(self):
-        url = urlparse(website)
+    # Check if the network is up or down (True for Up, False for Down)
+    async def check_network_status(self):
+        url = urlparse(self.website)
         status = HTTPConnection(url[1])
         try:
             status.request("HEAD", url[2])
-            return (status.getresponse().status)
+            return (1)
         except socket.error:
-            return (self.check_network_status())
+            return (0)
 
 
     # My own exception for an invalid Config File
