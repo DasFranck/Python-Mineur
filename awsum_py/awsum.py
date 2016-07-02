@@ -97,7 +97,7 @@ async def exit_sigint(signame, loop):
         task.cancel()
 
 def main():
-    # I hate this warning, so made it quiet
+    # I hate this warning, so made it quiet - TO BE FIXED
     warnings.filterwarnings("ignore", "coroutine 'exit_sigint' was never awaited")
 
     #Argument parsing
@@ -118,14 +118,15 @@ def main():
 
     #Create the asyncio loop
     loop = asyncio.get_event_loop()
-    #Adding signal handlers 
+    #Adding signal handlers
     loop.add_signal_handler(getattr(signal, "SIGINT"), asyncio.ensure_future, exit_sigint("SIGINT", loop))
     loop.add_signal_handler(getattr(signal, "SIGTERM"), asyncio.ensure_future, exit_sigint("SIGTERM", loop))
     try:
         #I don't remmember
         while True:
             result = loop.run_until_complete(asyncio.gather(*awsum_array))
-    # I don't care about those "errors"
+
+    # I don't care about those "errors" - TO BE FIXED
     except CancelledError:
         pass
 #        logging.info('CancelledError')
