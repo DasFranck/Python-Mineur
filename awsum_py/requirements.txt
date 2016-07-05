@@ -1,2 +1,4 @@
 hjson>=1.5
 aiohttp>=0.21
+pandas
+numpy
