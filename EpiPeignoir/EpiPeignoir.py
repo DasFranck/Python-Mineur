@@ -19,7 +19,7 @@ import requests
 import sys
 from configparser import ConfigParser
 
-re_credits = re.compile("Total credits acquired.+\n.+?(\d+).+", re.MULTILINE)
+re_credits = re.compile("Total credits acquired.+\n.+?\">.*?(\d+).+", re.MULTILINE)
 re_gpa = re.compile("G.P.A.+\n.+?(\d*\.*\d+).+", re.MULTILINE)
 
 def main():
@@ -52,18 +52,21 @@ def main():
                 break
         login_list = re.findall(r"([\w-]+)\n*", login_list)
     for (i, login) in enumerate(login_list):
-        r = requests.post(EPITECH_INTRA_URL + "user/" + login + "/", data=data)
-        if (r.status_code == 403 or r.status_code == 404):
-            print("Page not found, your creditentials or the target login maybe wrong (%s)." % login)
-        elif (r.status_code == 200):
-            html_page = r.text
-            credits = float(re.search(re_credits, html_page).groups()[0]) if re.search(re_credits, html_page) else -42.0
-            gpa = float(re.search(re_gpa, html_page).groups()[0]) if re.search(re_gpa, html_page) else -42.0
-            if not (args.quiet):
-                print("%d/%d %s %s %s" % (i+1, len(login_list), login, gpa, credits))
-            df.set_value(len(df), "login", login)
-            df.set_value(len(df)-1, "gpa", gpa)
-            df.set_value(len(df)-1, "credits", credits)
+        try:
+            r = requests.post(EPITECH_INTRA_URL + "user/" + login + "/", data=data)
+            if (r.status_code == 403 or r.status_code == 404):
+                print("Page not found, your creditentials or the target login maybe wrong (%s)." % login)
+            elif (r.status_code == 200):
+                html_page = r.text
+                credits = float(re.search(re_credits, html_page).groups()[0]) if re.search(re_credits, html_page) else -42.0
+                gpa = float(re.search(re_gpa, html_page).groups()[0]) if re.search(re_gpa, html_page) else -42.0
+                if not (args.quiet):
+                    print("%d/%d %s %s %s" % (i+1, len(login_list), login, gpa, credits))
+                df.set_value(len(df), "login", login)
+                df.set_value(len(df)-1, "gpa", gpa)
+                df.set_value(len(df)-1, "credits", credits)
+        except:
+            pass
     df.sort_values(["gpa", "credits"], ascending=False, inplace=True)
     df.reset_index(inplace=True, drop=True)
     df.index += 1

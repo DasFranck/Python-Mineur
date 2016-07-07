@@ -13,7 +13,6 @@
 import argparse
 import sc2reader
 
-
 #To be less dirty... one day.
 def init_colors(nocolors):
     global dict_colors
@@ -95,16 +94,16 @@ def print_teams(replay):
             print("Team %d:   (%s%s%s)" % (team.number, dict_colors["RED"], team.result, dict_colors["RESET_CLR"]))
         for player in team:
             print("\t%s%s%s (%s)" % (sc2_colors[player.color.name], player.name, dict_colors["RESET_CLR"], player.pick_race))
-        print("");
+        print("")
 
 
 def display_normal(replay):
-    print("");
+    print("")
     print(dict_colors["BOLD"] + dict_colors["UNDERLINE"] + "Replay Infos:" + dict_colors["RESET_CLR"])
     if (replay.is_ladder):
         print(dict_colors["BLUE"] + "Ranked Game" + dict_colors["RESET_CLR"])
     if (replay.is_private):
-        print(dict_colors["DARKGREY"] + "Private Game" + dict_colors["RESET_CLR"]);
+        print(dict_colors["DARKGREY"] + "Private Game" + dict_colors["RESET_CLR"])
     print("Game type:     %s (%s)" % (replay.game_type, replay.expansion))
     print("Map Name:      %s" % replay.map_name)
     print("Game start:    %s" % replay.start_time.strftime("%A %d/%m/%Y %H:%M:%S"))
@@ -123,8 +122,12 @@ def main():
     parser.add_argument("file_name", help="SC2 Replay file")
     parser.add_argument("--nc", help="No color displayed", action="store_true")
     args = parser.parse_args()
-    replay = sc2reader.load_replay(args.file_name)
-    init_colors(args.nc);
+    try:
+        replay = sc2reader.load_replay(args.file_name)
+    except UnicodeDecodeError:
+        print("An error occured while parsing the Replay, please update sc2reader and try again.")
+        exit(1)
+    init_colors(args.nc)
     display_normal(replay)
 
 
