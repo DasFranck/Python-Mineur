@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-## Name:    awsum.py
-## Desc:    Automatic Website Status and Uptime Monitoring
-##
-## Author:  "Das" Franck Hochstaetter
-## Version: v0.X (XX/XX/201X)
-##
-## Dependencies : - hjson
-##    A configuration file format for humans.
-##    Relaxed syntax, fewer mistakes, more comments.
-##                - aiohttp
-##    Http client/server for asyncio.
+'''
+Name:    awsum.py
+Desc:    Automatic Website Status and Uptime Monitoring
 
-## TODO : Find a better way to end the Futures/Tasks
+Author:  "Das" Franck Hochstaetter
+Version: v0.X (XX/XX/201X)
+
+Dependencies :  - hjson
+    A configuration file format for humans.
+    Relaxed syntax, fewer mistakes, more comments.
+                - aiohttp
+    Http client/server for asyncio.
+                - pandas
+'''
 
 import asyncio                              # Coroutine/Asynchronous routine
 import aiohttp                              # asyncio's http client
 import hjson                                # Config File
-import numpy as np
 import pandas as pd
 import signal
 import sys
 import time
 from argparse import ArgumentParser         # ArgumentParser
-from concurrent.futures import CancelledError
+
 
 DESCRIPTION = "Automatic Website Status and Uptime Monitoring"
 
@@ -51,9 +51,9 @@ class awsum():
         line = [""] * len(self.df.columns)
         line[0] = str(int(time.time()))
 
-        #Check if the website is up, if not check the network.
-        if (await self.check_website_status() == False):
-            if (await self.check_network_status() == False):
+        # Check if the website is up, if not check the network.
+        if await self.check_website_status() is False:
+            if await self.check_network_status() is False:
                 print("Network is down.")
                 line[self.index + 1] = "NETWORK_DOWN"
             else:
@@ -63,18 +63,15 @@ class awsum():
             print("%s is up." % self.target)
             line[self.index + 1] = "WEBSITE_UP"
         self.df.loc[len(self.df.index)] = line
-        print(self.df)
-        loop.call_later(self.timespan, asyncio.ensure_future, self.start(loop));
+        # print(self.df)
+        loop.call_later(self.timespan, asyncio.ensure_future, self.start(loop))
 
     # Check if the website is up or down (True for Up, False for Down)
     async def check_website_status(self):
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(self.target) as response:
-                    if response.status == 200:
-                        return (True)
-                    else:
-                        return (False)
+                    return (True if response.status == 200 else False)
             except aiohttp.errors.ClientOSError:
                 return (False)
 
@@ -83,49 +80,50 @@ class awsum():
         for ref in self.references:
             async with aiohttp.ClientSession() as session:
                 try:
-                    async with session.get(ref) as response:
-                        return (True)
+                    await session.get(ref)
+                    return (True)
                 except aiohttp.errors.ClientOSError:
-                    pass;
+                    pass
         return (False)
-
 
     # My own exception for an invalid Config File
     class InvalidConfigFile(Exception):
         def __init__(self, *args, **kwargs):
             Exception.__init__(self, *args, **kwargs)
 
-#Signal handler
+
+# Signal handler
 def exit_sigcatch(signame, loop):
     print("%s catched, exiting..." % signame)
     loop.stop()
 
+
 def main():
-    #Argument parsing
+    # Argument parsing
     parser = ArgumentParser(description=DESCRIPTION)
     parser.add_argument("-c", "--configfile", help="path to the config file", default="config.hjson")
     args = parser.parse_args()
 
-    #Condifguration parsing
+    # Configuration parsing
     config = hjson.load(open(args.configfile))
 
-    #Create the asyncio loop
+    # Create the asyncio loop
     loop = asyncio.get_event_loop()
 
-    awsum_array = []
     try:
         df = pd.DataFrame(columns=["timestamp"] + config["targets"])
         for i in range(len(config["targets"])):
             asyncio.async(awsum(config, i, df).start(loop))
-    #Except if a value was missing in the config file
+    # Except if a value was missing in the config file
     except awsum.InvalidConfigFile as err_msg:
         print("Error: IncorrectConfigFile: %s" % err_msg)
 
-    #Adding signal handlers
+    # Adding signal handlers
     loop.add_signal_handler(getattr(signal, "SIGINT"), exit_sigcatch, "SIGINT", loop)
     loop.add_signal_handler(getattr(signal, "SIGTERM"), exit_sigcatch, "SIGTERM", loop)
     loop.run_forever()
-    print(df);
+    df = df.groupby(by="timestamp").sum()
+    print(df)
     sys.exit(0)
 
 
