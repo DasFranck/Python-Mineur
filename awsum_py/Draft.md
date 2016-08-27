@@ -27,3 +27,6 @@ Awsum must stock his data in a file, probably a CSV file.
 
 ### Graph generator
 Awsum could have a side program called awsum-graph which take an output file from awsum and generate a graph about it.
+
+### Other things to do
+* Check the output path (permission/isfile)
