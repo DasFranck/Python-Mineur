@@ -15,11 +15,10 @@ references: [
 ]
 
 // Timespan between each check in seconds for each website.
-timespans:
-[
-1,
-2,
-6
+timespans: [
+  1,
+  2,
+  6
 ]
 
 // Other possibilities :
