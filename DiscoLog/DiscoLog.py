@@ -27,43 +27,50 @@ client = discord.Client()
 logger = Logger.Logger()
 
 
-async def getrekt():
+async def get_chat_logs():
     if not (os.path.exists("chat_logs")):
         os.makedirs("chat_logs")
 
-    # summary = open("chat_logs/summary.txt", 'w')
+    summary = open("chat_logs/summary.txt", 'w')
     for chan in client.private_channels:
         log_file = open("chat_logs/" + chan.id + ".log", 'w')
 
-        log_file.write("Recipients: ")
-        log_file.write(chan.me.name + ", ")
-        for recipient in chan.recipients:
-            log_file.write(recipient.name + ("\n" if recipient is chan.recipients[-1] else ", "))
-
-        if (chan.type == discord.ChannelType.group):
-            log_file.write("Chan name: " + chan.name + "\n")
-
-        log_file.write(chan.created_at.strftime("Created at: %A %d %b %Y %H:%M:%S UTC\n\n"))
-
+        # Get all messages
         messages = []
         async for item in client.logs_from(chan, limit=sys.maxsize):
             messages.append(item)
 
-        print(type(messages))
+        # Make the header
+        header = "ID: %s\n" % chan.id
+        header += "Recipients: "
+        header += chan.me.name + ", "
+        for recipient in chan.recipients:
+            header += recipient.name + ("\n" if recipient is chan.recipients[-1] else ", ")
+        if (chan.type == discord.ChannelType.group):
+            header += "Chan name: " + chan.name + "\n"
+        header += chan.created_at.strftime("Created at: %A %d %b %Y %H:%M:%S UTC\n")
+        header += "Length: %d messages\n\n" % len(messages)
+
+        # Write the header in the summary and in the chat log file
+        log_file.write(header)
+        summary.write(header)
+
         # Yeah I know the limit is maybe a bit too higher
         for msg in reversed(messages):
             log_file.write(msg.timestamp.strftime("%Y-%m-%d %H:%M:%S\t"))
             log_file.write(msg.author.name + "\t")
             log_file.write(msg.content + "\n")
         log_file.close()
+    summary.close()
 
 
+# Launch the getter when the bot is ready
 @client.async_event
 def on_ready():
     user = client.user
     logger.logger.info("Sucessfully connected as %s (%s)" % (user.name, user.id))
     logger.logger.info("------------")
-    yield from getrekt()
+    yield from get_chat_logs()
     print("Done.")
     return
 
