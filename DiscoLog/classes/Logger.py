@@ -13,7 +13,7 @@ class Logger():
     logger = logging.getLogger('discord')
 
     # Bot Initialization
-    def __init__(self):
+    def __init__(self, on_stdout=False, logging_type=logging.INFO):
         # Set logger level to INFO
         self.logger.setLevel(logging.INFO)
 
@@ -26,9 +26,10 @@ class Logger():
         self.logger.addHandler(handler)
 
         # Setting stream_handler (Stdout)
-        stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(logging.INFO)
-        self.logger.addHandler(stream_handler)
+        if (on_stdout):
+            stream_handler = logging.StreamHandler()
+            stream_handler.setLevel(logging.INFO)
+            self.logger.addHandler(stream_handler)
 
         self.logger.info("#-------------START-------------#")
         return

@@ -9,6 +9,7 @@ try:
     import argparse
     import discord
     import getpass
+    import progressbar
     import os
     import sys
 except ImportError as message:
@@ -32,8 +33,21 @@ async def get_chat_logs():
         os.makedirs("chat_logs")
 
     summary = open("chat_logs/summary.txt", 'w')
-    for chan in client.private_channels:
+    bar = progressbar.ProgressBar(redirect_stdout=True,
+                                  widgets=[progressbar.Percentage(), " ",
+                                           progressbar.Bar(), ' [', progressbar.Timer(), ']', ])
+
+    for chan in bar(client.private_channels):
         log_file = open("chat_logs/" + chan.id + ".log", 'w')
+
+        recipients = chan.me.name + ", "
+        for recipient in chan.recipients:
+            recipients += recipient.name + ("" if recipient is chan.recipients[-1] else ", ")
+        if (chan.type == discord.ChannelType.group):
+            print("Fetching messages from the private channel " + chan.name + "\"")
+        else:
+            print("Fecthing messages from a chat with " + recipients)
+        bar.update()
 
         # Get all messages
         messages = []
@@ -42,10 +56,7 @@ async def get_chat_logs():
 
         # Make the header
         header = "ID: %s\n" % chan.id
-        header += "Recipients: "
-        header += chan.me.name + ", "
-        for recipient in chan.recipients:
-            header += recipient.name + ("\n" if recipient is chan.recipients[-1] else ", ")
+        header += "Recipients:" + recipients + "\n"
         if (chan.type == discord.ChannelType.group):
             header += "Chan name: " + chan.name + "\n"
         header += chan.created_at.strftime("Created at: %A %d %b %Y %H:%M:%S UTC\n")
@@ -68,10 +79,13 @@ async def get_chat_logs():
 @client.async_event
 def on_ready():
     user = client.user
+    print("Sucessfully connected as %s (%s)\n" % (user.name, user.id))
     logger.logger.info("Sucessfully connected as %s (%s)" % (user.name, user.id))
     logger.logger.info("------------")
     yield from get_chat_logs()
     print("Done.")
+    logger.logger.info("Done.")
+    logger.logger.info("#--------------END--------------#")
     return
 
 
