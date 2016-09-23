@@ -3,7 +3,7 @@
 
 '''
 Name:    awsum.py
-Desc:    Automatic Website Status and Uptime Monitoring
+Desc:    Asynchronous Website Status and Uptime Monitoring
 
 Author:  "Das" Franck Hochstaetter
 Version: v0.X (XX/XX/201X)
