@@ -102,6 +102,7 @@ def main():
     # Argument parsing
     parser = ArgumentParser(description=DESCRIPTION)
     parser.add_argument("-c", "--configfile", help="path to the config file", default="config.hjson")
+    parser.add_argument("-o", "--output", help="path to the output file", default="output.csv")
     args = parser.parse_args()
 
     # Configuration parsing
@@ -123,6 +124,7 @@ def main():
     loop.add_signal_handler(getattr(signal, "SIGTERM"), exit_sigcatch, "SIGTERM", loop)
     loop.run_forever()
     df = df.groupby(by="timestamp").sum()
+    df.to_csv(args.output)
     print(df)
     sys.exit(0)
 

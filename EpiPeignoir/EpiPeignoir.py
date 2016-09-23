@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-## Name:    EpiPeignoir.py
-## Desc:    Epitech Ranking by GPA
-##
-## Author:  "Das" Franck Hochstaetter
-## Version: v0.2 (19/12/2015)
-##
-## Dependencies : - requests (pip install requests)
-##    Requests is an Apache2 Licensed HTTP library, written in Python, for human beings.
-##                - pandas (pip install pandas)
-##    pandas is a library providing data structures and data analysis tools for Python.
+'''
+Name:    EpiPeignoir.py
+Desc:    Epitech Ranking by GPA
+
+Author:  "Das" Franck Hochstaetter
+Version: v0.2 (19/12/2015)
+
+Dependencies :  - requests (pip install requests)
+    Requests is an Apache2 Licensed HTTP library, written in Python, for human beings.
+                - pandas (pip install pandas)
+    pandas is a library providing data structures and data analysis tools for Python.
+'''
 
 import argparse
 import pandas
 import re
 import requests
-import sys
+# import sys
 from configparser import ConfigParser
 
+# Globals
+EPITECH_INTRA_URL = "https://intra.epitech.eu/"
 re_credits = re.compile("Total credits acquired.+\n.+?\">.*?(\d+).+", re.MULTILINE)
 re_gpa = re.compile("G.P.A.+\n.+?(\d*\.*\d+).+", re.MULTILINE)
 
+
 def main():
+    # Configuring the ArgumentParser
     parser = argparse.ArgumentParser(description="Epitech Ranking by GPA")
     parser.add_argument("-c", "--configfile", help="path to the config file", default="config.ini")
     parser.add_argument("-l", "--loginlist", help="path to the login list")
@@ -31,8 +37,11 @@ def main():
     parser.add_argument("-q", "--quiet", help="Don't display anything except errors", action="store_true")
     parser.add_argument("-n", "--noresult", help="Don't display end result", action="store_true")
     args = parser.parse_args()
+
+    # Init dataframe
     df = pandas.DataFrame()
-    EPITECH_INTRA_URL = "https://intra.epitech.eu/"
+
+    # Read configuration
     config = ConfigParser()
     config.read(args.configfile)
 
@@ -40,6 +49,7 @@ def main():
             "password": config["Credential"]["password"],
             "submit": "Connect"}
 
+    # Getting the login list
     login_list = ""
     if (args.loginlist):
         login_list = re.findall(r"([\w-]+)\n*", open(args.loginlist).read())
@@ -51,6 +61,8 @@ def main():
             except:
                 break
         login_list = re.findall(r"([\w-]+)\n*", login_list)
+
+    # Working...
     for (i, login) in enumerate(login_list):
         try:
             r = requests.post(EPITECH_INTRA_URL + "user/" + login + "/", data=data)
@@ -61,16 +73,19 @@ def main():
                 credits = float(re.search(re_credits, html_page).groups()[0]) if re.search(re_credits, html_page) else -42.0
                 gpa = float(re.search(re_gpa, html_page).groups()[0]) if re.search(re_gpa, html_page) else -42.0
                 if not (args.quiet):
-                    print("%d/%d %s %s %s" % (i+1, len(login_list), login, gpa, credits))
+                    print("%d/%d %s %s %s" % (i + 1, len(login_list), login, gpa, credits))
                 df.set_value(len(df), "login", login)
-                df.set_value(len(df)-1, "gpa", gpa)
-                df.set_value(len(df)-1, "credits", credits)
+                df.set_value(len(df) - 1, "gpa", gpa)
+                df.set_value(len(df) - 1, "credits", credits)
         except:
             pass
+
+    # Sorting and make dataframe great again
     df.sort_values(["gpa", "credits"], ascending=False, inplace=True)
     df.reset_index(inplace=True, drop=True)
     df.index += 1
     df_str = df.to_string()
+
     if not (args.noresult or args.quiet):
         print(df_str)
     if (args.output):
