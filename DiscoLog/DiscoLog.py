@@ -27,7 +27,6 @@ except ImportError as message:
 client = discord.Client()
 logger = Logger.Logger()
 
-
 async def get_chat_logs():
     if not (os.path.exists("chat_logs")):
         os.makedirs("chat_logs")
@@ -44,7 +43,7 @@ async def get_chat_logs():
         for recipient in chan.recipients:
             recipients += recipient.name + ("" if recipient is chan.recipients[-1] else ", ")
         if (chan.type == discord.ChannelType.group):
-            print("Fetching messages from the private channel " + chan.name + "\"")
+            print("Fetching messages from the private channel \"" + chan.name + "\"")
         else:
             print("Fecthing messages from a chat with " + recipients)
         bar.update()
@@ -86,6 +85,7 @@ def on_ready():
     print("Done.")
     logger.logger.info("Done.")
     logger.logger.info("#--------------END--------------#")
+    yield from client.logout()
     return
 
 
