@@ -116,6 +116,7 @@ def on_ready():
     print("Done.")
     logger.logger.info("Done.")
     logger.logger.info("#--------------END--------------#")
+    yield from client.logout()
     return
 
 
