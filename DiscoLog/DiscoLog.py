@@ -10,8 +10,9 @@ try:
     import discord
     import getpass
     import progressbar
-    import os
+    import shlex
     import sys
+    import os
 except ImportError as message:
     print("Missing package(s) for %s: %s" % (NAME, message))
     exit(12)
@@ -27,9 +28,9 @@ except ImportError as message:
 client = discord.Client()
 logger = Logger.Logger()
 
-async def get_chat_logs():
-    if not (os.path.exists("chat_logs")):
-        os.makedirs("chat_logs")
+
+# Get PM and write them in chat_logs/Private_Messages/{NAME}-{ID}.log
+async def get_private_messages():
 
     summary = open("chat_logs/summary.txt", 'w')
     bar = progressbar.ProgressBar(redirect_stdout=True,
@@ -37,15 +38,19 @@ async def get_chat_logs():
                                            progressbar.Bar(), ' [', progressbar.Timer(), ']', ])
 
     for chan in bar(client.private_channels):
-        log_file = open("chat_logs/" + chan.id + ".log", 'w')
-
         recipients = chan.me.name + ", "
         for recipient in chan.recipients:
             recipients += recipient.name + ("" if recipient is chan.recipients[-1] else ", ")
-        if (chan.type == discord.ChannelType.group):
+
+        if (chan.name is not None):
             print("Fetching messages from the private channel \"" + chan.name + "\"")
+            #log_file = open("chat_logs/" + chan.name + "-" + chan.id + ".log", 'w')
         else:
             print("Fecthing messages from a chat with " + recipients)
+            #log_file = open("chat_logs/" + recipients + "-" + chan.id + ".log", 'w')
+
+        log_file = open("chat_logs/" + chan.id + ".log", 'w')
+
         bar.update()
 
         # Get all messages
@@ -56,7 +61,7 @@ async def get_chat_logs():
         # Make the header
         header = "ID: %s\n" % chan.id
         header += "Recipients:" + recipients + "\n"
-        if (chan.type == discord.ChannelType.group):
+        if (chan.name is not None):
             header += "Chan name: " + chan.name + "\n"
         header += chan.created_at.strftime("Created at: %A %d %b %Y %H:%M:%S UTC\n")
         header += "Length: %d messages\n\n" % len(messages)
@@ -78,14 +83,20 @@ async def get_chat_logs():
 @client.async_event
 def on_ready():
     user = client.user
-    print("Sucessfully connected as %s (%s)\n" % (user.name, user.id))
-    logger.logger.info("Sucessfully connected as %s (%s)" % (user.name, user.id))
+    logger.log_info_print("Sucessfully connected as %s (%s)" % (user.name, user.id))
     logger.logger.info("------------")
-    yield from get_chat_logs()
+    print()
+
+    if not (os.path.exists("chat_logs")):
+        os.makedirs("chat_logs")
+
+    logger.log_info_print("Getting private messages")
+    yield from get_private_messages()
     print("Done.")
     logger.logger.info("Done.")
-    logger.logger.info("#--------------END--------------#")
+
     yield from client.logout()
+    logger.logger.info("#--------------END--------------#")
     return
 
 
