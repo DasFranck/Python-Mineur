@@ -12,7 +12,7 @@ import os
 class Logger():
     logger = logging.getLogger('discord')
 
-    # Bot Initialization
+    # Logger Initialization
     def __init__(self, on_stdout=False, logging_type=logging.INFO):
         # Set logger level to INFO
         self.logger.setLevel(logging.INFO)
@@ -52,3 +52,15 @@ class Logger():
             self.logger.warn(string + " in a Private Channel")
         else:
             self.logger.warn(string + " in #" + message.channel.name + " on " + message.server.name + " (%s)" % message.server.id)
+
+    def log_info_print(self, string):
+        self.logger.info(string)
+        print(string)
+
+    def log_warn_print(self, string):
+        self.logger.warn(string)
+        print(string)
+
+    def log_error_print(self, string):
+        self.logger.error(string)
+        print(string)
