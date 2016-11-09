@@ -9,7 +9,7 @@ try:
     import argparse
     import discord
     import getpass
-    import progressbar
+#    import progressbar
     import os
     import sys
 except ImportError as message:
@@ -60,9 +60,11 @@ async def get_logs_bt(client, channel):
 @client.async_event
 def on_ready():
     user = client.user
+    game = discord.Game(name="*pat pat Spooky*")
     print("Sucessfully connected as %s (%s)\n" % (user.name, user.id))
     logger.logger.info("Sucessfully connected as %s (%s)" % (user.name, user.id))
     logger.logger.info("------------")
+    yield from client.change_status(game=game)
     for server in client.servers:
         if "BreakTime" in server.name:
             for channel in server.channels:
@@ -78,10 +80,9 @@ def on_ready():
 
 def main():
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("email")
+    parser.add_argument("token")
     args = parser.parse_args()
-    password = getpass.getpass()
-    client.run(args.email, password)
+    client.run(args.token)
     return
 
 
