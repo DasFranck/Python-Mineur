@@ -63,3 +63,8 @@ target/
 
 # Awsum related stuff
 output.csv
+
+# Discolog outputs
+chat_logs/
+plots/
+logs/
