@@ -65,8 +65,8 @@ class Plotify():
         self.plots["top10"] = (plot_usertopx(self, 10, "PlotBT-top10.html"), "PlotBT-top10.html", "Number of cumulatives messages for the Top 10 users")
         self.plots["top20"] = (plot_usertopx(self, 20, "PlotBT-top20.html"), "PlotBT-top20.html", "Number of cumulatives messages for the Top 20 users")
         self.stats = OrderedDict()
-        self.stats["top10perday"] = top10_per_day(self)
-        self.stats["top10yesterday"] = top10_yesterday(self)
+        self.stats["top10perday"] = (top10_per_day(self, "StatsBT-top10perday.html"), "StatsBT-top10perday.html", "Standings history")
+        self.stats["top10yesterday"] = (top10_yesterday(self, "Stats-top10yesterday.html"), None, None)
 
     def write_main_html(self):
         doc, tag, text = Doc().tagtext()
@@ -81,26 +81,28 @@ class Plotify():
                 with tag('h2'):
                     text("Standings of yesterday")
                 with tag('h3'):
-                    doc.asis(self.stats["top10yesterday"])
+                    doc.asis(self.stats["top10yesterday"][0])
                 # Graphs
                 with tag('h2'):
                     text("Graphs")
                 doc.asis("<ul style=\"list-style-type:none\">")
                 for _, plot in self.plots.items():
-                    doc.asis("<li>")
-                    with tag('a', href=plot[1]):
-                        text(plot[2])
-                    doc.asis("</li>")
+                    if plot[1] and plot[2]:
+                        doc.asis("<li>")
+                        with tag('a', href=plot[1]):
+                            text(plot[2])
+                        doc.asis("</li>")
                 doc.asis("</ul>")
                 # Stats
                 with tag('h2'):
                     text("Stats")
                 doc.asis("<ul style=\"list-style-type:none\">")
                 for _, stat in self.stats.items():
-                    doc.asis("<li>")
-                    with tag('a', href=stat[1]):
-                        text(stat[2])
-                    doc.asis("</li>")
+                    if stat[1] and stat[2]:
+                        doc.asis("<li>")
+                        with tag('a', href=stat[1]):
+                            text(stat[2])
+                        doc.asis("</li>")
                 doc.asis("</ul>")
                 # Footer
                 text("Page generated at %s" % datetime.now().strftime("%T the %F"))
@@ -116,13 +118,26 @@ class Plotify():
             with tag('head'):
                 doc.asis('<meta http-equiv="content-type" content="text/html; charset=utf-8" />')
             with tag('body'):
-                doc.asis(self.stats["top10perday"])
+                doc.asis(self.stats["top10perday"][0])
                 doc.asis("<br />")
                 doc.asis("<br />")
                 text("Page generated at %s" % datetime.now().strftime("%T the %F"))
 
         result = doc.getvalue()
         with open("plots/standinghistory.html", "w") as file:
+            file.write(result)
+
+    def write_raw_text_in_html(self, content, path):
+        doc, tag, text = Doc().tagtext()
+
+        with tag('html'):
+            with tag('head'):
+                doc.asis('<meta http-equiv="content-type" content="text/html; charset=utf-8" />')
+            with tag('body'):
+                doc.asis(content)
+
+        result = doc.getvalue()
+        with open("plots/" + path, "w") as file:
             file.write(result)
 
 
@@ -167,7 +182,7 @@ def plot_usertopx(plotify, max, path):
                           "plots/" + path))
 
 
-def top10_per_day(plotify):
+def top10_per_day(plotify, path):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     text = "<pre>"
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
@@ -185,10 +200,11 @@ def top10_per_day(plotify):
         if meta_per_date is not meta_grouped[0]:
             text += "<br />"
     text += "</pre>"
+    plotify.write_raw_text_in_html(text, path)
     return (text)
 
 
-def top10_yesterday(plotify):
+def top10_yesterday(plotify, path):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     text = "<ol type=\"1\">"
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
@@ -203,6 +219,7 @@ def top10_yesterday(plotify):
     for (i, elem) in enumerate(top_list):
         text += "<li><pre>%d\t%s</pre></li>" % (elem[1], html.escape(elem[0]))
     text += "</ol>"
+    plotify.write_raw_text_in_html(text, path)
     return (text)
 
 
