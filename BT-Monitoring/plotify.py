@@ -67,7 +67,8 @@ class Plotify():
         self.plots["top20"] = (plot_usertopx(self, 20, "PlotBT-top20.html"), "PlotBT-top20.html", "Number of cumulatives messages for the Top 20 users")
         self.stats = OrderedDict()
         self.stats["top10perday"] = (top10_per_day(self, "StatsBT-top10perday.html"), "StatsBT-top10perday.html", "Standings history")
-        self.stats["top10yesterday"] = (top10_yesterday(self, "Stats-top10yesterday.html"), None, None)
+        top10yesterday_html, self.top10yesterday = top10_yesterday(self, "Stats-top10yesterday.html")
+        self.stats["top10yesterday"] = (top10yesterday_html, None, None)
 
     def write_main_html(self):
         doc, tag, text = Doc().tagtext()
@@ -208,6 +209,7 @@ def top10_per_day(plotify, path):
 def top10_yesterday(plotify, path):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     text = "<ol type=\"1\">"
+    plain = ""
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
@@ -219,9 +221,10 @@ def top10_yesterday(plotify, path):
 
     for (i, elem) in enumerate(top_list):
         text += "<li><pre>%d\t%s</pre></li>" % (elem[1], html.escape(elem[0]))
+        plain += "%d.\t%d\t%s\n" % (i + 1, elem[1], elem[0])
     text += "</ol>"
     plotify.write_raw_text_in_html(text, path)
-    return (text)
+    return (text, plain)
 
 
 def main():

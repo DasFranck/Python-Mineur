@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
+
 import getBTmessages
+import write_summary_to_server
 from plotify import Plotify
 
 TOKEN = "MjQ1NjUzNTU3ODcxNjQwNTg0.CwpAXg.E-0gX1l3EXQ0c_YRyVWEBhltOxc"
@@ -10,14 +13,26 @@ LOG_PATH = "chat_logs/BreakTime-discussion.log"
 
 def main():
     parser = argparse.ArgumentParser(description="BT-Monitor Script")
-    parser.add_argument("--no-getlog", action='store_true')
+    parser.add_argument("--no-getlog", action='store_true', default=False)
+    parser.add_argument("--no-plotify", action='store_true', default=False)
+    parser.add_argument("--silent", action='store_true', default=False)
     args = parser.parse_args()
 
-    getBTmessages.client.run(TOKEN)
-    plotify = Plotify(LOG_PATH)
-    plotify.plotify()
-    plotify.write_main_html()
-    plotify.write_standing_history_html()
+    if not args.no_getlog:
+        getBTmessages.client.run(TOKEN)
+
+    if not args.no_plotify:
+        plotify = Plotify(LOG_PATH)
+        plotify.plotify()
+        plotify.write_main_html()
+        plotify.write_standing_history_html()
+
+    if not args.silent:
+        text = "DiscoLog Monitoring has been updated.\n\nStandings of yesterday:\n```\n"
+        text += plotify.top10yesterday
+        text += "```\n\nMore stats and graphs here : https://dasfranck.fr/DiscoLog/Monitoring/BT/"
+        write_summary_to_server.set_message(text)
+        write_summary_to_server.client.run(TOKEN)
 
 
 if __name__ == '__main__':

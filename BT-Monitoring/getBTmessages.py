@@ -10,6 +10,7 @@ try:
     import discord
     import os
     import sys
+    from datetime import timedelta
 except ImportError as message:
     print("Missing package(s) for %s: %s" % (NAME, message))
     exit(12)
@@ -47,7 +48,7 @@ async def get_logs_bt(client, channel):
 
     log_file.write(header)
     for msg in reversed(messages):
-        log_file.write(msg.timestamp.strftime("%Y-%m-%d %H:%M:%S\t"))
+        log_file.write((msg.timestamp + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S\t"))
         log_file.write(msg.author.name + "\t")
         log_file.write(msg.content + "\n")
     log_file.close()
