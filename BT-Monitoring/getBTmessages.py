@@ -8,8 +8,6 @@ NAME = "DiscoLog"
 try:
     import argparse
     import discord
-    import getpass
-#    import progressbar
     import os
     import sys
 except ImportError as message:
@@ -32,7 +30,7 @@ async def get_logs_bt(client, channel):
     if not (os.path.exists("chat_logs")):
         os.makedirs("chat_logs")
 
-    log_file = open("chat_logs/BREAKTEST.log", 'w')
+    log_file = open("chat_logs/BreakTime-%s.log" % channel.name, 'w')
     i = 0
     messages = []
     async for item in client.logs_from(channel, limit=sys.maxsize):
@@ -43,8 +41,7 @@ async def get_logs_bt(client, channel):
 
     # Make the header
     header = "ID: %s\n" % channel.id
-    if (channel.type == discord.ChannelType.group):
-        header += "Chan name: " + channel.name + "\n"
+    header += "Chan name: " + channel.name + "\n"
     header += channel.created_at.strftime("Created at: %A %d %b %Y %H:%M:%S UTC\n")
     header += "Length: %d messages\n\n" % len(messages)
 
@@ -68,8 +65,12 @@ def on_ready():
     for server in client.servers:
         if "BreakTime" in server.name:
             for channel in server.channels:
-                if channel.type == discord.ChannelType.text and "discussion" in channel.name:
-                    yield from get_logs_bt(client, channel)
+                if (channel.type != discord.ChannelType.voice):
+                    print(channel.name)
+                    try:
+                        yield from get_logs_bt(client, channel)
+                    except discord.errors.Forbidden:
+                        pass
 
     print("Done.")
     logger.logger.info("Done.")

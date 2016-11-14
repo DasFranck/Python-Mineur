@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import argparse
 import html
@@ -27,11 +28,11 @@ def cumultative_sum(values, start=0):
 
 # Plotify class
 class Plotify():
-    def __init__(self, args):
+    def __init__(self, log_path):
         if not (os.path.exists("plots")):
             os.makedirs("plots")
         self.get_date_array()
-        self.get_log_content(args)
+        self.get_log_content(log_path)
         self.counts = [self.chat_log.count(x) for x in self.date_array]
         self.cumul = list(cumultative_sum(self.counts))
 
@@ -45,10 +46,10 @@ class Plotify():
             date_array.append(d1 + td(days=i))
         self.date_array = [x.strftime("%Y-%m-%d") for x in date_array]
 
-    def get_log_content(self, args):
+    def get_log_content(self, log_path):
         text = ""
         meta_list = []
-        with open(args.log_path, "r") as file:
+        with open(log_path, "r") as file:
             for line in file:
                 text += line
                 if (len(line.split("\t")) > 1):
@@ -229,7 +230,7 @@ def main():
     parser.add_argument("log_path")
     args = parser.parse_args()
 
-    plotify = Plotify(args)
+    plotify = Plotify(args.log_path)
     plotify.plotify()
     plotify.write_main_html()
     plotify.write_standing_history_html()

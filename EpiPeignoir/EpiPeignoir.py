@@ -18,7 +18,6 @@ import argparse
 import pandas
 import re
 import requests
-# import sys
 from configparser import ConfigParser
 
 # Globals
