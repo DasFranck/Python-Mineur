@@ -86,6 +86,10 @@ class Plotify():
                 with tag('h2'):
                     text("Graphs")
                 doc.asis("<ul style=\"list-style-type:none\">")
+                doc.asis("<li>")
+                with tag('a', href="allplots.html"):
+                    doc.asis("All graphs")
+                doc.asis("</li>")
                 for _, plot in self.plots.items():
                     if plot[1] and plot[2]:
                         doc.asis("<li>")
@@ -109,6 +113,22 @@ class Plotify():
 
         result = doc.getvalue()
         with open("plots/index.html", "w") as file:
+            file.write(result)
+
+    def write_all_plots_html(self):
+        doc, tag, text = Doc().tagtext()
+
+        with tag('html'):
+            with tag('head'):
+                doc.asis('<meta http-equiv="content-type" content="text/html; charset=utf-8" />')
+            with tag('body'):
+                for _, plot in self.plots.items():
+                    doc.asis(plot[0])
+                doc.asis("<br />")
+                text("Page generated at %s" % datetime.now().strftime("%T the %F"))
+
+        result = doc.getvalue()
+        with open("plots/allplots.html", "w") as file:
             file.write(result)
 
     def write_standing_history_html(self):
@@ -231,8 +251,9 @@ def main():
 
     plotify = Plotify(args)
     plotify.plotify()
-    plotify.write_main_html()
     plotify.write_standing_history_html()
+    plotify.write_all_plots_html()
+    plotify.write_main_html()
 
 
 if __name__ == '__main__':
