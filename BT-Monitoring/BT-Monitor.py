@@ -7,19 +7,19 @@ import getBTmessages
 import write_summary_to_server
 from plotify import Plotify
 
-TOKEN = "MjQ1NjUzNTU3ODcxNjQwNTg0.CwpAXg.E-0gX1l3EXQ0c_YRyVWEBhltOxc"
 LOG_PATH = "chat_logs/BreakTime-discussion.log"
 
 
 def main():
     parser = argparse.ArgumentParser(description="BT-Monitor Script")
+    parser.add_argument("token")
     parser.add_argument("--no-getlog", action='store_true', default=False)
     parser.add_argument("--no-plotify", action='store_true', default=False)
     parser.add_argument("--silent", action='store_true', default=False)
     args = parser.parse_args()
 
     if not args.no_getlog:
-        getBTmessages.client.run(TOKEN)
+        getBTmessages.client.run(args.token)
 
     if not args.no_plotify:
         plotify = Plotify(LOG_PATH)
@@ -32,7 +32,7 @@ def main():
         text += plotify.top10yesterday
         text += "```\n\nMore stats and graphs here : https://dasfranck.fr/DiscoLog/Monitoring/BT/"
         write_summary_to_server.set_message(text)
-        write_summary_to_server.client.run(TOKEN)
+        write_summary_to_server.client.run(args.token)
 
 
 if __name__ == '__main__':
