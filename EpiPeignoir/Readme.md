@@ -1,6 +1,14 @@
 # EpiPeignoir
 Epitech Ranking by GPA
 
+## How to use it
+Firstly, fill the config file config.ini with your creditentials.  
+You must provide to the script this config file (-c) and a login list (-l).  
+You can do it like this:
+```
+./EpiPeignoir.py -c config.ini -l login_list.txt
+```
+
 ## Features
 * Rank a list of logins by GPA:
   * Input: stdin or txtfile
@@ -13,7 +21,7 @@ Epitech Ranking by GPA
 * pandas (pip install pandas)  
     pandas is a library providing data structures and data analysis tools for Python.
   
-  All those requirements can be easily installed by doing ``pip install -r requirements.txt``
+All those requirements can be easily installed by doing ``pip install -r requirements.txt``
 
 ## Changelog
 ### Version 0.2 (19/12/2015)

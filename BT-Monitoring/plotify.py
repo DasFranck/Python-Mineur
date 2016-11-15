@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import argparse
 import html
@@ -27,11 +28,11 @@ def cumultative_sum(values, start=0):
 
 # Plotify class
 class Plotify():
-    def __init__(self, args):
+    def __init__(self, log_path):
         if not (os.path.exists("plots")):
             os.makedirs("plots")
         self.get_date_array()
-        self.get_log_content(args)
+        self.get_log_content(log_path)
         self.counts = [self.chat_log.count(x) for x in self.date_array]
         self.cumul = list(cumultative_sum(self.counts))
 
@@ -45,10 +46,10 @@ class Plotify():
             date_array.append(d1 + td(days=i))
         self.date_array = [x.strftime("%Y-%m-%d") for x in date_array]
 
-    def get_log_content(self, args):
+    def get_log_content(self, log_path):
         text = ""
         meta_list = []
-        with open(args.log_path, "r") as file:
+        with open(log_path, "r") as file:
             for line in file:
                 text += line
                 if (len(line.split("\t")) > 1):
@@ -66,7 +67,8 @@ class Plotify():
         self.plots["top20"] = (plot_usertopx(self, 20, "PlotBT-top20.html"), "PlotBT-top20.html", "Number of cumulatives messages for the Top 20 users")
         self.stats = OrderedDict()
         self.stats["top10perday"] = (top10_per_day(self, "StatsBT-top10perday.html"), "StatsBT-top10perday.html", "Standings history")
-        self.stats["top10yesterday"] = (top10_yesterday(self, "Stats-top10yesterday.html"), None, None)
+        top10yesterday_html, self.top10yesterday = top10_yesterday(self, "Stats-top10yesterday.html")
+        self.stats["top10yesterday"] = (top10yesterday_html, None, None)
 
     def write_main_html(self):
         doc, tag, text = Doc().tagtext()
@@ -227,6 +229,7 @@ def top10_per_day(plotify, path):
 def top10_yesterday(plotify, path):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     text = "<ol type=\"1\">"
+    plain = ""
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
@@ -236,11 +239,12 @@ def top10_yesterday(plotify, path):
         count_map[t[1]] = count_map.get(t[1], 0) + 1
     top_list = sorted(count_map.items(), key=operator.itemgetter(1), reverse=True)[0:10]
 
-    for (i, elem) in enumerate(top_list):
+    for (i, elem) in enumerate(top_list[1:]):
         text += "<li><pre>%d\t%s</pre></li>" % (elem[1], html.escape(elem[0]))
+        plain += "%d.\t%d\t%s\n" % (i + 1, elem[1], elem[0])
     text += "</ol>"
     plotify.write_raw_text_in_html(text, path)
-    return (text)
+    return (text, plain)
 
 
 def main():
@@ -249,7 +253,7 @@ def main():
     parser.add_argument("log_path")
     args = parser.parse_args()
 
-    plotify = Plotify(args)
+    plotify = Plotify(args.log_path)
     plotify.plotify()
     plotify.write_standing_history_html()
     plotify.write_all_plots_html()

@@ -72,7 +72,7 @@ async def get_private_messages():
 
         # Yeah I know the limit is maybe a bit too higher
         for msg in reversed(messages):
-            log_file.write(msg.timestamp.strftime("%Y-%m-%d %H:%M:%S\t"))
+            log_file.write((msg.timestamp + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S\t"))
             log_file.write(msg.author.name + "\t")
             log_file.write(msg.content + "\n")
         log_file.close()

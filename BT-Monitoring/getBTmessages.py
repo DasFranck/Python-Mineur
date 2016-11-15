@@ -8,10 +8,9 @@ NAME = "DiscoLog"
 try:
     import argparse
     import discord
-    import getpass
-#    import progressbar
     import os
     import sys
+    from datetime import timedelta
 except ImportError as message:
     print("Missing package(s) for %s: %s" % (NAME, message))
     exit(12)
@@ -32,7 +31,7 @@ async def get_logs_bt(client, channel):
     if not (os.path.exists("chat_logs")):
         os.makedirs("chat_logs")
 
-    log_file = open("chat_logs/BREAKTEST.log", 'w')
+    log_file = open("chat_logs/BreakTime-%s.log" % channel.name, 'w')
     i = 0
     messages = []
     async for item in client.logs_from(channel, limit=sys.maxsize):
@@ -43,14 +42,13 @@ async def get_logs_bt(client, channel):
 
     # Make the header
     header = "ID: %s\n" % channel.id
-    if (channel.type == discord.ChannelType.group):
-        header += "Chan name: " + channel.name + "\n"
+    header += "Chan name: " + channel.name + "\n"
     header += channel.created_at.strftime("Created at: %A %d %b %Y %H:%M:%S UTC\n")
     header += "Length: %d messages\n\n" % len(messages)
 
     log_file.write(header)
     for msg in reversed(messages):
-        log_file.write(msg.timestamp.strftime("%Y-%m-%d %H:%M:%S\t"))
+        log_file.write((msg.timestamp + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S\t"))
         log_file.write(msg.author.name + "\t")
         log_file.write(msg.content + "\n")
     log_file.close()
@@ -68,8 +66,12 @@ def on_ready():
     for server in client.servers:
         if "BreakTime" in server.name:
             for channel in server.channels:
-                if channel.type == discord.ChannelType.text and "discussion" in channel.name:
-                    yield from get_logs_bt(client, channel)
+                if (channel.type != discord.ChannelType.voice):
+                    print(channel.name)
+                    try:
+                        yield from get_logs_bt(client, channel)
+                    except discord.errors.Forbidden:
+                        pass
 
     print("Done.")
     logger.logger.info("Done.")
