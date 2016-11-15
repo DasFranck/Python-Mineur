@@ -51,10 +51,11 @@ class Plotify():
         meta_list = []
         with open(log_path, "r") as file:
             for line in file:
-                text += line
-                if (len(line.split("\t")) > 1):
-                    (date, author, _) = line.split("\t")
-                    meta_list.append((date, author))
+                if (re.match(r'^\d{4}-\d{2}-\d{2} \d\d:\d\d:\d\d\t', line)):
+                    text += line
+                    if (len(line.split("\t")) > 1):
+                        (date, author, _) = line.split("\t")
+                        meta_list.append((date, author))
         self.chat_log = text
         self.meta_list = meta_list
         print("OK")

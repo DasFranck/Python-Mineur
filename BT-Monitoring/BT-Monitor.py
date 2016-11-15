@@ -24,8 +24,9 @@ def main():
     if not args.no_plotify:
         plotify = Plotify(LOG_PATH)
         plotify.plotify()
-        plotify.write_main_html()
         plotify.write_standing_history_html()
+        plotify.write_all_plots_html()
+        plotify.write_main_html()
 
     if not args.silent:
         text = "DiscoLog Monitoring has been updated.\n\nStandings of yesterday:\n```\n"
