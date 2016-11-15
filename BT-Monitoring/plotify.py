@@ -240,7 +240,7 @@ def top10_yesterday(plotify, path):
         count_map[t[1]] = count_map.get(t[1], 0) + 1
     top_list = sorted(count_map.items(), key=operator.itemgetter(1), reverse=True)[0:10]
 
-    for (i, elem) in enumerate(top_list[1:]):
+    for (i, elem) in enumerate(top_list):
         text += "<li><pre>%d\t%s</pre></li>" % (elem[1], html.escape(elem[0]))
         plain += "%d.\t%d\t%s\n" % (i + 1, elem[1], elem[0])
     text += "</ol>"
