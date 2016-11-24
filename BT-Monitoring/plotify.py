@@ -75,11 +75,12 @@ class Plotify():
         with tag('html'):
             # HEAD
             with tag('head'):
+                doc.asis("<!DOCTYPE html>")
                 doc.asis("<meta charset=\"UTF-8\">")
                 doc.asis("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">")
                 doc.asis("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">")
                 doc.asis("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css\" integrity=\"sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi\" crossorigin=\"anonymous\">")
-                doc.asis("<link rel=\"stylesheet\" href=\"css/own.css\">")
+                doc.asis("<link rel=\"stylesheet\" href=\"../css/own.css\">")
                 with tag('title'):
                     text("DiscoLog Monitoring for BreakTime (#discussion)")
             # BODY
@@ -90,17 +91,24 @@ class Plotify():
                     # Standing of yesterday
                     with tag('h3', klass="sub-header"):
                         text("Standings of yesterday")
-                    with tag("thead"):
-                        with tag("tr"):
-                            doc.stag("th", "#")
-                            doc.stag("th", "Messages count")
-                            doc.stag("th", "Nickname")
-                    with tag("tbody"):
-                        for (i, elem) in self.top10_yesterday():
+                    with tag("table", klass="table table-sm"):
+                        with tag("thead"):
                             with tag("tr"):
-                                doc.stag("th", i)
-                                doc.stag("th", elem[0])
-                                doc.stag("th", elem[1])
+                                with tag("th"):
+                                    text("#")
+                                with tag("th"):
+                                    text("Messages count")
+                                with tag("th"):
+                                    text("Nickname")
+                        with tag("tbody"):
+                            for (i, elem) in enumerate(top10_yesterday(self)):
+                                with tag("tr"):
+                                    with tag("td"):
+                                        text(str(i + 1))
+                                    with tag("td"):
+                                        text(elem[0])
+                                    with tag("td"):
+                                        text(elem[1])
                     # Graphs
                     with tag('h3'):
                         text("Graphs")
@@ -241,7 +249,7 @@ def top10_per_day(plotify, path):
     return (text)
 
 
-def top10_yesterday(plotify, path):
+def top10_yesterday(plotify):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     standing = []
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]

@@ -13,6 +13,7 @@ try:
     import shlex
     import sys
     import os
+    from datetime import timedelta
 except ImportError as message:
     print("Missing package(s) for %s: %s" % (NAME, message))
     exit(12)
