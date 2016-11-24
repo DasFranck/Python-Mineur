@@ -252,6 +252,7 @@ def top10_per_day(plotify, path):
 def top10_yesterday(plotify):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     standing = []
+    plain = ""
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
@@ -263,6 +264,8 @@ def top10_yesterday(plotify):
 
     for (i, elem) in enumerate(top_list):
         standing.append((elem[1], elem[0]))
+        plain += "%d.\t%d\t%s\n" % (i + 1, elem[1], elem[0])
+    plotify.top10yesterday = plain
     return (standing)
 
 
