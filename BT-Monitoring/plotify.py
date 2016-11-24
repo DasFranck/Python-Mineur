@@ -11,7 +11,7 @@ import plotly.graph_objs as go
 import re
 from collections import Counter, OrderedDict
 from datetime import date, datetime, timedelta as td
-from yattag import Doc
+from yattag import Doc, indent
 
 
 # UTILS
@@ -68,53 +68,67 @@ class Plotify():
         self.plots["top20"] = (plot_usertopx(self, 20, "PlotBT-top20.html"), "PlotBT-top20.html", "Number of cumulatives messages for the Top 20 users")
         self.stats = OrderedDict()
         self.stats["top10perday"] = (top10_per_day(self, "StatsBT-top10perday.html"), "StatsBT-top10perday.html", "Standings history")
-        top10yesterday_html, self.top10yesterday = top10_yesterday(self, "Stats-top10yesterday.html")
-        self.stats["top10yesterday"] = (top10yesterday_html, None, None)
 
     def write_main_html(self):
         doc, tag, text = Doc().tagtext()
 
         with tag('html'):
+            # HEAD
             with tag('head'):
-                doc.asis('<meta http-equiv="content-type" content="text/html; charset=utf-8" />')
-            with tag('body'):
-                with tag('h1'):
+                doc.asis("<meta charset=\"UTF-8\">")
+                doc.asis("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">")
+                doc.asis("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">")
+                doc.asis("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css\" integrity=\"sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi\" crossorigin=\"anonymous\">")
+                doc.asis("<link rel=\"stylesheet\" href=\"css/own.css\">")
+                with tag('title'):
                     text("DiscoLog Monitoring for BreakTime (#discussion)")
-                # Standing of yesterday
-                with tag('h2'):
-                    text("Standings of yesterday")
-                with tag('h3'):
-                    doc.asis(self.stats["top10yesterday"][0])
-                # Graphs
-                with tag('h2'):
-                    text("Graphs")
-                doc.asis("<ul style=\"list-style-type:none\">")
-                doc.asis("<li>")
-                with tag('a', href="allplots.html"):
-                    doc.asis("All graphs")
-                doc.asis("</li>")
-                for _, plot in self.plots.items():
-                    if plot[1] and plot[2]:
-                        doc.asis("<li>")
-                        with tag('a', href=plot[1]):
-                            text(plot[2])
-                        doc.asis("</li>")
-                doc.asis("</ul>")
-                # Stats
-                with tag('h2'):
-                    text("Stats")
-                doc.asis("<ul style=\"list-style-type:none\">")
-                for _, stat in self.stats.items():
-                    if stat[1] and stat[2]:
-                        doc.asis("<li>")
-                        with tag('a', href=stat[1]):
-                            text(stat[2])
-                        doc.asis("</li>")
-                doc.asis("</ul>")
-                # Footer
-                text("Page generated at %s" % datetime.now().strftime("%T the %F"))
+            # BODY
+            with tag('body'):
+                with tag('h1', klass="page-header"):
+                    text("DiscoLog Monitoring for BreakTime (#discussion)")
+                with tag("div", klass="container"):
+                    # Standing of yesterday
+                    with tag('h3', klass="sub-header"):
+                        text("Standings of yesterday")
+                    with tag("thead"):
+                        with tag("tr"):
+                            doc.stag("th", "#")
+                            doc.stag("th", "Messages count")
+                            doc.stag("th", "Nickname")
+                    with tag("tbody"):
+                        for (i, elem) in self.top10_yesterday():
+                            with tag("tr"):
+                                doc.stag("th", i)
+                                doc.stag("th", elem[0])
+                                doc.stag("th", elem[1])
+                    # Graphs
+                    with tag('h3'):
+                        text("Graphs")
+                    with tag("ul", ("style", "list-style-type:none")):
+                        with tag("li"):
+                            with tag('a', href="allplots.html"):
+                                doc.asis("All graphs")
+                        for _, plot in self.plots.items():
+                            if plot[1] and plot[2]:
+                                with tag("li"):
+                                    with tag('a', href=plot[1]):
+                                        text(plot[2])
+                    # Stats
+                    with tag('h3'):
+                        text("Stats")
+                    with tag("ul", ("style", "list-style-type:none")):
+                        for _, stat in self.stats.items():
+                            if stat[1] and stat[2]:
+                                with tag("li"):
+                                    with tag('a', href=stat[1]):
+                                        text(stat[2])
+                    # Footer
+                    with tag("footer", klass="footer"):
+                        with tag("div", klass="container"):
+                            with tag("span", klass="text-muted"):
+                                text("Page generated at %s by DiscoLog (DasFranck#1168)" % datetime.now().strftime("%T the %F"))
 
-        result = doc.getvalue()
+        result = indent(doc.getvalue())
         with open("plots/index.html", "w") as file:
             file.write(result)
 
@@ -229,8 +243,7 @@ def top10_per_day(plotify, path):
 
 def top10_yesterday(plotify, path):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
-    text = "<ol type=\"1\">"
-    plain = ""
+    standing = []
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
@@ -241,11 +254,8 @@ def top10_yesterday(plotify, path):
     top_list = sorted(count_map.items(), key=operator.itemgetter(1), reverse=True)[0:10]
 
     for (i, elem) in enumerate(top_list):
-        text += "<li><pre>%d\t%s</pre></li>" % (elem[1], html.escape(elem[0]))
-        plain += "%d.\t%d\t%s\n" % (i + 1, elem[1], elem[0])
-    text += "</ol>"
-    plotify.write_raw_text_in_html(text, path)
-    return (text, plain)
+        standing.append((elem[1], elem[0]))
+    return (standing)
 
 
 def main():
