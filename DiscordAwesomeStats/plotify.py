@@ -28,13 +28,14 @@ def cumultative_sum(values, start=0):
 
 # Plotify class
 class Plotify():
-    def __init__(self, log_path):
-        if not (os.path.exists("plots")):
-            os.makedirs("plots")
+    def __init__(self, output_path, log_path):
+        self.log_path = log_path
+        self.get_log_content()
         self.get_date_array()
-        self.get_log_content(log_path)
         self.counts = [self.chat_log.count(x) for x in self.date_array]
         self.cumul = list(cumultative_sum(self.counts))
+        if not (os.path.exists(output_path + self.server_name)):
+            os.makedirs(output_path + self.server_name)
 
     def get_date_array(self):
         d1 = date(2016, 9, 7)
@@ -46,11 +47,20 @@ class Plotify():
             date_array.append(d1 + td(days=i))
         self.date_array = [x.strftime("%Y-%m-%d") for x in date_array]
 
-    def get_log_content(self, log_path):
+    def get_header_infos(self, file):
+        self.server_name = file.next()[13:]
+        self.server_id = file.next()[11:]
+        self.channel_name = file.next()[14:]
+        self.channel_id = file.next()[12:]
+        self.created_at = file.next()[12:-4]
+        self.message_nb = file.next()[8:]
+
+    def get_log_content(self):
         text = ""
         meta_list = []
-        with open(log_path, "r") as file:
-            for line in file:
+        with open(self.log_path, "r") as file:
+            self.get_header_infos(file)
+            for line in enumerate(file):
                 if (re.match(r'^\d{4}-\d{2}-\d{2} \d\d:\d\d:\d\d\t', line)):
                     text += line
                     if (len(line.split("\t")) > 1):

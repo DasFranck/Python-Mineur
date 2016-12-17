@@ -1,0 +1,31 @@
+# Configuration file for DMP
+
+## Servers list
+# If channels aren't specified the getting and stats will be done on every channel the bot has access to.
+# Server name and server id are required.
+# Silent means no summary writed on the server
+# Locked do nothing for now.
+
+
+servers:
+  - name: Dummy server
+    id: 564564654654546755
+    channels:
+      - name: Discussion
+        id: 6546545656564564546
+
+  - name: Sampleserver
+    id: 212131232132132312
+    silent: True
+    locked: True
+
+  - name: Another sammple server
+    id: 213231123231213123
+    silent: True
+
+
+# Required for html output
+outputdir: /srv/http/dasfranck/DMP/
+
+# Required for message getter
+token: THISISNOTAREALTOKEN
