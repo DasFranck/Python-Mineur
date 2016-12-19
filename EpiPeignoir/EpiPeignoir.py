@@ -51,7 +51,7 @@ def main():
     # Getting the login list
     login_list = ""
     if (args.loginlist):
-        login_list = re.findall(r"([\w-]+)\n*", open(args.loginlist).read())
+        login_list = open(args.loginlist).read().split("\n")
     else:
         while True:
             try:

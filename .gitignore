@@ -68,3 +68,5 @@ output.csv
 chat_logs/
 plots/
 logs/
+
+DiscordAwesomeStats/myconfig.yaml
