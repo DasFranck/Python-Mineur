@@ -86,7 +86,7 @@ class Plotify():
                 doc.asis("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">")
                 doc.asis("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">")
                 doc.asis("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css\" integrity=\"sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi\" crossorigin=\"anonymous\">")
-                doc.asis("<link rel=\"stylesheet\" href=\"../css/own.css\">")
+                doc.asis("<link rel=\"stylesheet\" href=\"../../css/own.css\">")
                 with tag('title'):
                     text("DiscoLog Monitoring for %s (#%s)" % (self.summary["Server name"], self.summary["Channel name"]))
             # BODY
@@ -262,7 +262,6 @@ def top10_yesterday(plotify):
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
-    print(meta_grouped)
     meta_yesterday = meta_grouped[-2]
     count_map = {}
     for t in meta_yesterday:
