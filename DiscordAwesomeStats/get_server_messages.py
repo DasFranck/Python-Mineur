@@ -83,7 +83,6 @@ def on_ready():
                          channel.id in [str(i["id"]) for i in cfg["channels"]])):
                         try:
                             print("\t{} ({})".format(channel.name, channel.id))
-                            print(channel.type)
                             yield from get_logs_from_channel(client, channel, cfg)
                         except discord.errors.Forbidden:
                             pass
