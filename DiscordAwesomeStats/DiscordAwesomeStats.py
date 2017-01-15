@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import json
 import os
 import yaml
 
@@ -28,17 +29,20 @@ def main():
         os.mkdir("chat_logs")
 
     if not args.no_getlog:
-        with open("chat_logs/summary.txt", 'w') as summary:
+        with open("chat_logs/summary.txt", 'w') as summary_file:
+            summary = []
             get_server_messages.set_config(config["servers"], summary)
             get_server_messages.client.run(config["token"])
+            json.dump(summary, summary_file, indent=4)
     else:
         get_server_messages.client.close()
 
-    return
     if not args.no_plotify:
-        with open("chat_logs/summary.txt", 'r') as summary:
-            for line in summary:
-                plotify = Plotify(config["output_dir"], line)
+        with open("chat_logs/summary.txt", 'r') as summary_file:
+            summary_json = json.load(summary_file)
+            for channel in summary_json:
+                print("Doing plots for %s #%s" % (channel["Server name"], channel["Channel name"]))
+                plotify = Plotify(config["outputdir"], channel)
                 plotify.plotify()
                 plotify.write_standing_history_html()
                 plotify.write_all_plots_html()

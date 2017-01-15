@@ -28,11 +28,11 @@ config = None
 summary = None
 
 
-def set_config(server_config, summary_file):
+def set_config(servers_config, servers_summary):
     global config
     global summary
-    config = server_config
-    summary = summary_file
+    config = servers_config
+    summary = servers_summary
 
 
 async def get_logs_from_channel(client, channel, cfg):
@@ -62,8 +62,15 @@ async def get_logs_from_channel(client, channel, cfg):
         log_file.write(msg.author.name + "\t")
         log_file.write(msg.content + "\n")
     log_file.close()
-    summary.write("%s-%s.log\n" % (str(cfg["id"]), channel.id))
-    summary.write(header)
+
+    summary.append({
+        "Server name": cfg["name"],
+        "Server ID": cfg["id"],
+        "Channel name": channel.name,
+        "Channel ID": channel.id,
+        "Length": len(messages),
+        "Log path": "chat_logs/%s-%s.log" % (str(cfg["id"]), channel.id)
+    })
 
 
 # Launch the getter when the bot is ready

@@ -10,14 +10,17 @@ import plotly
 import plotly.graph_objs as go
 import re
 from collections import Counter, OrderedDict
-from datetime import date, datetime, timedelta as td
+from datetime import datetime, timedelta as td
 from yattag import Doc, indent
 
 
 # UTILS
 def generate_plot(graph_dict, file_path):
-    plotly.offline.plot(graph_dict, filename=file_path, show_link=False, auto_open=False)
-    return (plotly.offline.plot(graph_dict, filename=file_path, show_link=False, auto_open=False, output_type="div"))
+    try:
+        plotly.offline.plot(graph_dict, filename=file_path, show_link=False, auto_open=False)
+        return (plotly.offline.plot(graph_dict, filename=file_path, show_link=False, auto_open=False, output_type="div"))
+    except:
+        return ""
 
 
 def cumultative_sum(values, start=0):
@@ -28,17 +31,19 @@ def cumultative_sum(values, start=0):
 
 # Plotify class
 class Plotify():
-    def __init__(self, output_path, log_path):
-        self.log_path = log_path
+    def __init__(self, output_path, summary_dict):
+        self.summary = summary_dict
+        self.log_path = summary_dict["Log path"]
+        self.plots_dir = "{}/{}/{}/".format(output_path, summary_dict["Server ID"], summary_dict["Channel ID"])
         self.get_log_content()
         self.get_date_array()
         self.counts = [self.chat_log.count(x) for x in self.date_array]
         self.cumul = list(cumultative_sum(self.counts))
-        if not (os.path.exists(output_path + self.server_name)):
-            os.makedirs(output_path + self.server_name)
+        if not (os.path.exists(self.plots_dir)):
+            os.makedirs(self.plots_dir)
 
     def get_date_array(self):
-        d1 = date(2016, 9, 7)
+        d1 = datetime.strptime(self.meta_list[0][0], "%Y-%m-%d %H:%M:%S").date()
         d2 = datetime.today().date()
         delta = d2 - d1
 
@@ -47,20 +52,11 @@ class Plotify():
             date_array.append(d1 + td(days=i))
         self.date_array = [x.strftime("%Y-%m-%d") for x in date_array]
 
-    def get_header_infos(self, file):
-        self.server_name = file.next()[13:]
-        self.server_id = file.next()[11:]
-        self.channel_name = file.next()[14:]
-        self.channel_id = file.next()[12:]
-        self.created_at = file.next()[12:-4]
-        self.message_nb = file.next()[8:]
-
     def get_log_content(self):
         text = ""
         meta_list = []
         with open(self.log_path, "r") as file:
-            self.get_header_infos(file)
-            for line in enumerate(file):
+            for (i, line) in enumerate(file):
                 if (re.match(r'^\d{4}-\d{2}-\d{2} \d\d:\d\d:\d\d\t', line)):
                     text += line
                     if (len(line.split("\t")) > 1):
@@ -72,12 +68,12 @@ class Plotify():
 
     def plotify(self):
         self.plots = OrderedDict()
-        self.plots["msgperday"] = (plot_msgperday(self, "PlotBT-msg.html"), "PlotBT-msg.html", "Number of messages per day")
-        self.plots["msgcumul"] = (plot_msgcumul(self, "PlotBT-msgcumul.html"), "PlotBT-msgcumul.html", "Number of cumulatives messages")
-        self.plots["top10"] = (plot_usertopx(self, 10, "PlotBT-top10.html"), "PlotBT-top10.html", "Number of cumulatives messages for the Top 10 users")
-        self.plots["top20"] = (plot_usertopx(self, 20, "PlotBT-top20.html"), "PlotBT-top20.html", "Number of cumulatives messages for the Top 20 users")
+        self.plots["msgperday"] = (plot_msgperday(self, "Plot-msg.html"), "Plot-msg.html", "Number of messages per day")
+        self.plots["msgcumul"] = (plot_msgcumul(self, "Plot-msgcumul.html"), "Plot-msgcumul.html", "Number of cumulatives messages")
+        self.plots["top10"] = (plot_usertopx(self, 10, "Plot-top10.html"), "Plot-top10.html", "Number of cumulatives messages for the Top 10 users")
+        self.plots["top20"] = (plot_usertopx(self, 20, "Plot-top20.html"), "Plot-top20.html", "Number of cumulatives messages for the Top 20 users")
         self.stats = OrderedDict()
-        self.stats["top10perday"] = (top10_per_day(self, "StatsBT-top10perday.html"), "StatsBT-top10perday.html", "Standings history")
+        self.stats["top10perday"] = (top10_per_day(self, "Stats-top10perday.html"), "Stats-top10perday.html", "Standings history")
 
     def write_main_html(self):
         doc, tag, text = Doc().tagtext()
@@ -92,11 +88,11 @@ class Plotify():
                 doc.asis("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css\" integrity=\"sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi\" crossorigin=\"anonymous\">")
                 doc.asis("<link rel=\"stylesheet\" href=\"../css/own.css\">")
                 with tag('title'):
-                    text("DiscoLog Monitoring for BreakTime (#discussion)")
+                    text("DiscoLog Monitoring for %s (#%s)" % (self.summary["Server name"], self.summary["Channel name"]))
             # BODY
             with tag('body'):
                 with tag('h1', klass="page-header"):
-                    text("DiscoLog Monitoring for BreakTime (#discussion)")
+                    text("DiscoLog Monitoring for %s (#%s)" % (self.summary["Server name"], self.summary["Channel name"]))
                 with tag("div", klass="container"):
                     # Standing of yesterday
                     with tag('h3', klass="sub-header"):
@@ -147,7 +143,7 @@ class Plotify():
                                 text("Page generated at %s by DiscoLog (DasFranck#1168)" % datetime.now().strftime("%T the %F"))
 
         result = indent(doc.getvalue())
-        with open("plots/index.html", "w") as file:
+        with open(self.plots_dir + "index.html", "w") as file:
             file.write(result)
 
     def write_all_plots_html(self):
@@ -163,7 +159,7 @@ class Plotify():
                 text("Page generated at %s" % datetime.now().strftime("%T the %F"))
 
         result = doc.getvalue()
-        with open("plots/allplots.html", "w") as file:
+        with open(self.plots_dir + "allplots.html", "w") as file:
             file.write(result)
 
     def write_standing_history_html(self):
@@ -179,7 +175,7 @@ class Plotify():
                 text("Page generated at %s" % datetime.now().strftime("%T the %F"))
 
         result = doc.getvalue()
-        with open("plots/standinghistory.html", "w") as file:
+        with open(self.plots_dir + "standinghistory.html", "w") as file:
             file.write(result)
 
     def write_raw_text_in_html(self, content, path):
@@ -192,7 +188,7 @@ class Plotify():
                 doc.asis(content)
 
         result = doc.getvalue()
-        with open("plots/" + path, "w") as file:
+        with open(self.plots_dir + path, "w") as file:
             file.write(result)
 
 
@@ -210,14 +206,14 @@ def plot_msgperday(plotify, path):
                        name="Average messages per day")
 
     return (generate_plot({"data": [line1, line2],
-                           "layout": go.Layout(title="Number of messages per day in #discussion (BreakTime)")},
-                          "plots/" + path))
+                           "layout": go.Layout(title="Number of messages per day in #%s (%s)" % (plotify.summary["Channel name"], plotify.summary["Server name"]))},
+                          plotify.plots_dir + path))
 
 
 def plot_msgcumul(plotify, path):
     return (generate_plot({"data": [go.Scatter(x=plotify.date_array, y=plotify.cumul)],
-                           "layout": go.Layout(title="Number of cumulatives messages in #discussion (BreakTime)")},
-                          "plots/" + path))
+                           "layout": go.Layout(title="Number of cumulatives messages in #%s (%s)" % (plotify.summary["Channel name"], plotify.summary["Server name"]))},
+                          plotify.plots_dir + path))
 
 
 def plot_usertopx(plotify, max, path):
@@ -233,8 +229,8 @@ def plot_usertopx(plotify, max, path):
                           name=user)
         users_line.append(line)
     return (generate_plot({"data": users_line,
-                           "layout": go.Layout(title="Number of cumulatives messages for the Top %d users in #discussion (BreakTime)" % max)},
-                          "plots/" + path))
+                           "layout": go.Layout(title="Number of cumulatives messages for the Top %d users in #%s (%s)" % (max, plotify.summary["Channel name"], plotify.summary["Server name"]))},
+                          plotify.plots_dir + path))
 
 
 def top10_per_day(plotify, path):
@@ -266,6 +262,7 @@ def top10_yesterday(plotify):
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
+    print(meta_grouped)
     meta_yesterday = meta_grouped[-2]
     count_map = {}
     for t in meta_yesterday:
