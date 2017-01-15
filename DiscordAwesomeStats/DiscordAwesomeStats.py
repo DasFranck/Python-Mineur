@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os
 import yaml
 
 import get_server_messages
@@ -11,7 +12,7 @@ from plotify import Plotify
 
 def main():
     parser = argparse.ArgumentParser(description="BT-Monitor Script")
-    parser.add_argument("config_file")
+    parser.add_argument("config_file", default="./config.yaml")
     parser.add_argument("--no-getlog", action='store_true', default=False)
     parser.add_argument("--no-plotify", action='store_true', default=False)
     parser.add_argument("--silent", action='store_true', default=False)
@@ -22,6 +23,9 @@ def main():
 
     if "servers" not in config:
         return (1)
+
+    if not os.path.isdir("chat_logs/"):
+        os.mkdir("chat_logs")
 
     if not args.no_getlog:
         with open("chat_logs/summary.txt", 'w') as summary:

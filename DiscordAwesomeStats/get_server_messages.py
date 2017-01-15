@@ -62,7 +62,8 @@ async def get_logs_from_channel(client, channel, cfg):
         log_file.write(msg.author.name + "\t")
         log_file.write(msg.content + "\n")
     log_file.close()
-    summary.write("chat_logs/%s-%s.log\n" % (str(cfg["id"]), channel.id))
+    summary.write("%s-%s.log\n" % (str(cfg["id"]), channel.id))
+    summary.write(header)
 
 
 # Launch the getter when the bot is ready
@@ -71,17 +72,18 @@ def on_ready():
     print("Sucessfully connected as %s (%s)\n" % (client.user.name, client.user.id))
     logger.logger.info("Sucessfully connected as %s (%s)" % (client.user.name, client.user.id))
     logger.logger.info("------------")
-    yield from client.change_status(game=discord.Game(name="*pat pat Spooky*"))
+    # yield from client.change_status(game=discord.Game(name="Ketchup Splash Simulator"))
     for cfg in config:
         for server in client.servers:
             if server.id == str(cfg["id"]):
                 print("{} ({})".format(server.name, server.id))
                 for channel in server.channels:
-                    if ("channels" not in cfg or
-                        (channel.type != discord.ChannelType.voice and
-                            channel.id in [str(i["id"]) for i in cfg["channels"]])):
+                    if (channel.type != discord.ChannelType.voice and
+                        ("channels" not in cfg or
+                         channel.id in [str(i["id"]) for i in cfg["channels"]])):
                         try:
                             print("\t{} ({})".format(channel.name, channel.id))
+                            print(channel.type)
                             yield from get_logs_from_channel(client, channel, cfg)
                         except discord.errors.Forbidden:
                             pass
