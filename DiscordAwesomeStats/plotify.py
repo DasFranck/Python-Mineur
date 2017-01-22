@@ -10,7 +10,7 @@ import plotly
 import plotly.graph_objs as go
 import re
 from collections import Counter, OrderedDict
-from datetime import datetime, timedelta as td
+from datetime import date, datetime, timedelta
 from yattag import Doc, indent
 
 
@@ -31,11 +31,16 @@ def cumultative_sum(values, start=0):
 
 # Plotify class
 class Plotify():
+    class EmptyChannelException(Exception):
+        pass
+
     def __init__(self, output_path, summary_dict):
         self.summary = summary_dict
         self.log_path = summary_dict["Log path"]
         self.plots_dir = "{}/{}/{}/".format(output_path, summary_dict["Server ID"], summary_dict["Channel ID"])
         self.get_log_content()
+        if len(self.meta_list) == 0:
+            raise self.EmptyChannelException
         self.get_date_array()
         self.counts = [self.chat_log.count(x) for x in self.date_array]
         self.cumul = list(cumultative_sum(self.counts))
@@ -49,7 +54,7 @@ class Plotify():
 
         date_array = []
         for i in range(delta.days):
-            date_array.append(d1 + td(days=i))
+            date_array.append(d1 + timedelta(days=i))
         self.date_array = [x.strftime("%Y-%m-%d") for x in date_array]
 
     def get_log_content(self):
@@ -75,7 +80,7 @@ class Plotify():
         self.stats = OrderedDict()
         self.stats["top10perday"] = (top10_per_day(self, "Stats-top10perday.html"), "Stats-top10perday.html", "Standings history")
 
-    def write_main_html(self):
+    def write_channel_main_html(self):
         doc, tag, text = Doc().tagtext()
 
         with tag('html'):
@@ -178,6 +183,7 @@ class Plotify():
         with open(self.plots_dir + "standinghistory.html", "w") as file:
             file.write(result)
 
+
     def write_raw_text_in_html(self, content, path):
         doc, tag, text = Doc().tagtext()
 
@@ -258,15 +264,22 @@ def top10_per_day(plotify, path):
 def top10_yesterday(plotify):
     # user_list = sort(list(set(([b for a,b in meta_list]))))
     standing = []
+    count_map = {}
     plain = ""
+
     meta_list = [(meta[0].split(" ")[0], meta[1]) for meta in plotify.meta_list]
     meta_sorted = sorted(meta_list, key=operator.itemgetter(0))
     meta_grouped = [list(group) for key, group in itertools.groupby(meta_sorted, operator.itemgetter(0))]
-    meta_yesterday = meta_grouped[-2]
-    count_map = {}
-    for t in meta_yesterday:
+    meta_yesterday = [lst for lst in meta_grouped if lst[0][0] == (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")]
+    if (len(meta_yesterday) == 0):
+        plain = "No message has been posted in this channel yesterday"
+        return (standing)
+
+    print(meta_yesterday)
+    for t in meta_yesterday[0]:
         count_map[t[1]] = count_map.get(t[1], 0) + 1
     top_list = sorted(count_map.items(), key=operator.itemgetter(1), reverse=True)[0:10]
+    # print(top_list)
 
     for (i, elem) in enumerate(top_list):
         standing.append((elem[1], elem[0]))
