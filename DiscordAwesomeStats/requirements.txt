@@ -1,4 +1,0 @@
-pyaml
-discord.py
-plotly
-yattag
