@@ -4,9 +4,6 @@ Tout petits programmes en Python
 ### awsum_py
 Asynchronous Website Status and Uptime Monitoring powered by PYthon
 
-### DiscordAwesomeStats
-Plots and html stats generator for Discord logs.
-
 ### DiscoLog
 Backup all your private conversations on Discord
 
